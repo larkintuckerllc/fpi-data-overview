@@ -19,7 +19,7 @@ export default (state = 1, action) => {
 export const getScale = (state) => state[reducerMountPoint];
 // ACTION CREATOR VALIDATORS
 const validScale = value =>
-  !(value === undefined || typeof value === 'number');
+  !(value === undefined || typeof value !== 'number');
 // ACTION CREATORS
 export const setScale = (value) => {
   if (!validScale(value)) throw new Error();
