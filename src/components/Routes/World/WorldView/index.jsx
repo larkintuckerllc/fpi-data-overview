@@ -2,12 +2,13 @@ import React, { Component, PropTypes } from 'react';
 import * as d3Core from 'd3';
 import * as d3Geo from 'd3-geo';
 import './world-countries.json';
-import './samples.json';
+import './fisheries.json';
 import styles from './index.scss';
 
-// TODO: IMPLEMENT ZOOM
 const RADIUS = 50;
 const d3 = { ...d3Core, ...d3Geo };
+const circle = d3.geoCircle();
+
 class WorldView extends Component {
   constructor() {
     super();
@@ -27,15 +28,17 @@ class WorldView extends Component {
       .attr('cy', 0)
       .attr('r', RADIUS)
       .attr('id', styles.rootGlobe);
+    const rootCountriesEl = this.rootEl.append('g');
+    // const rootSamplesEl = this.rootEl.append('g');
+    // const rootCirclesEl = this.rootEl.append('g');
+    const rootFisheriesEl = this.rootEl.append('g');
     this.projection = d3
       .geoOrthographic()
       .translate([0, 0])
       .scale(RADIUS);
     this.path = d3.geoPath().projection(this.projection);
-    this.rootCountriesEl = this.rootEl.append('g');
-    this.rootSamplesEl = this.rootEl.append('g');
     d3.json('world-countries.json', countries => {
-      this.rootCountriesEl
+      rootCountriesEl
         .selectAll(`.${styles.rootCountriesFeature}`)
         .data(countries.features)
         .enter()
@@ -43,11 +46,27 @@ class WorldView extends Component {
         .attr('class', styles.rootCountriesFeature)
         .attr('d', d => this.path(d));
       this.rootCountriesElSelection =
-        this.rootCountriesEl
+        rootCountriesEl
         .selectAll(`.${styles.rootCountriesFeature}`)
         .data(countries.features);
+      d3.json('fisheries.json', fisheries => {
+        const fisheriesGeoJSON = fisheries.map(o => (
+          circle.center([o.latlng[1], o.latlng[0]]).radius(1)()
+        ));
+        rootFisheriesEl
+          .selectAll(`.${styles.rootFisheriesFeature}`)
+          .data(fisheriesGeoJSON)
+          .enter()
+          .append('path')
+          .attr('class', styles.rootFisheriesFeature)
+          .attr('d', d => this.path(d));
+        this.rootFisheriesElSelection =
+          rootFisheriesEl
+          .selectAll(`.${styles.rootFisheriesFeature}`)
+          .data(fisheriesGeoJSON);
+      /*
       d3.json('samples.json', samples => {
-        this.rootSamplesEl
+        rootSamplesEl
           .selectAll(`.${styles.rootSamplesFeature}`)
           .data(samples.features)
           .enter()
@@ -55,9 +74,17 @@ class WorldView extends Component {
           .attr('class', styles.rootSamplesFeature)
           .attr('d', d => this.path(d));
         this.rootSamplesElSelection =
-          this.rootSamplesEl
+          rootSamplesEl
           .selectAll(`.${styles.rootSamplesFeature}`)
           .data(samples.features);
+        rootCirclesEl
+          .selectAll(`.${styles.rootCirclesFeature}`)
+          .data([circle.center([0, 0]).radius(10)()])
+          .enter()
+          .append('path')
+          .attr('class', styles.rootCirclesFeature)
+          .attr('d', d => this.path(d));
+        */
         this.d3Render(rotation, scale);
         this.rootEl.node().addEventListener('mousedown', this.handleMouseDown);
         this.rootEl.node().addEventListener('mousemove', this.handleMouseMove);
@@ -89,7 +116,9 @@ class WorldView extends Component {
     window.requestAnimationFrame(() => {
       this.rootGlobeEl.attr('r', this.projection.scale());
       this.rootCountriesElSelection.attr('d', d => this.path(d));
-      this.rootSamplesElSelection.attr('d', d => this.path(d));
+      // this.rootSamplesElSelection.attr('d', d => this.path(d));
+      // this.rootCirclesElSelection.attr('d', d => this.path(d));
+      this.rootFisheriesElSelection.attr('d', d => this.path(d));
     });
   }
   handleMouseDown(e) {
