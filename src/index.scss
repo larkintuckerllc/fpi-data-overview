@@ -1,3 +1,26 @@
-:global(.btn:focus), :global(.btn:active), :global(button:focus), :global(button:active) {
-  outline: none !important;
+:global(html, body) {
+  margin: 0px;
+  padding: 0px;
+  font-family: sans-serif;
+}
+:global(.container) {
+    margin-right: auto;
+    margin-left: auto;
+    padding-left: 15px;
+    padding-right: 15px;
+}
+@media (min-width: 1200px) {
+  :global(.container) {
+      width: 1170px;
+  }
+}
+@media (min-width: 992px) {
+  :global(.container) {
+      width: 970px;
+  }
+}
+@media (min-width: 768px) {
+  :global(.container) {
+      width: 750px;
+  }
 }

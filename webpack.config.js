@@ -7,6 +7,8 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 // eslint-disable-next-line
 const WebpackMd5Hash = require('webpack-md5-hash');
+// eslint-disable-next-line
+const CleanWebpackPlugin = require('clean-webpack-plugin');
 
 const HtmlWebpackPluginConfig = new HtmlWebpackPlugin({
   template: path.join(__dirname, 'src', 'index.html'),
@@ -22,9 +24,6 @@ module.exports = {
   entry: {
     vendor: [
       'babel-polyfill',
-      'bootstrap-loader',
-      'bootstrap-sass',
-      'jquery',
       'normalizr',
       'react',
       'react-dom',
@@ -69,10 +68,6 @@ module.exports = {
       test: /\.scss$/,
       exclude: /node_modules/,
       loaders: ['style', 'css?module&-autoprefixer', 'postcss', 'sass'],
-    }, {
-      // eslint-disable-next-line
-      test: /bootstrap-sass[\/\\]assets[\/\\]javascripts[\/\\]/,
-      loader: 'imports-loader?jQuery=jquery',
     }],
   },
   postcss: () =>
@@ -87,6 +82,7 @@ module.exports = {
       }),
     ],
   plugins: [
+    new CleanWebpackPlugin(['dist']),
     new WebpackMd5Hash(),
     HtmlWebpackPluginConfig,
     new webpack.DefinePlugin({

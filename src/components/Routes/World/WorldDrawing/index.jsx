@@ -23,16 +23,19 @@ class WorldDrawing extends Component {
     this.handleWheel = this.handleWheel.bind(this);
   }
   componentDidMount() {
-    const { removeSelected, rotation, scale, selected, setSelected } = this.props;
+    const { rotation, scale, selected, setSelected } = this.props;
     this.rootEl = d3.select(`#${styles.root}`);
+    this.rootSpaceEl = this.rootEl.append('rect')
+      .attr('x', -1 * RADIUS)
+      .attr('y', -1 * RADIUS)
+      .attr('width', RADIUS * 2)
+      .attr('height', RADIUS * 2)
+      .attr('id', styles.rootSpace);
     this.rootGlobeEl = this.rootEl.append('circle')
       .attr('cx', 0)
       .attr('cy', 0)
       .attr('r', RADIUS)
-      .attr('id', styles.rootGlobe)
-      .on('click', () => {
-        removeSelected();
-      });
+      .attr('id', styles.rootGlobe);
     const rootCountriesEl = this.rootEl.append('g');
     const rootFisheriesEl = this.rootEl.append('g');
     this.projection = d3
@@ -47,8 +50,8 @@ class WorldDrawing extends Component {
         .enter()
         .append('path')
         .attr('class', styles.rootCountriesFeature)
-        .attr('d', d => this.path(d))
-        .on('click', removeSelected);
+        .attr('style', `stroke-width: ${scale * 0.25}`)
+        .attr('d', d => this.path(d));
       this.rootCountriesElSelection =
         rootCountriesEl
         .selectAll(`.${styles.rootCountriesFeature}`)
@@ -69,6 +72,7 @@ class WorldDrawing extends Component {
           ))
           .attr('d', d => this.path(d.geoJSON))
           .on('click', d => {
+            if (this.mousePanned) return;
             setSelected(d.fishery);
           });
         this.rootFisheriesElSelection =
@@ -79,6 +83,7 @@ class WorldDrawing extends Component {
         this.rootEl.on('mousedown', this.handleMouseDown);
         this.rootEl.on('mousemove', this.handleMouseMove);
         this.rootEl.on('mouseup', this.handleMouseUp);
+        this.rootEl.on('mouseleave', this.handleMouseUp);
         this.rootEl.on('touchstart', this.handleTouchStart);
         this.rootEl.on('touchmove', this.handleTouchMove);
         this.rootEl.on('touchend', this.handleTouchEnd);
@@ -97,6 +102,10 @@ class WorldDrawing extends Component {
     this.rootEl.on('mousedown', null);
     this.rootEl.on('mousemove', null);
     this.rootEl.on('mouseup', null);
+    this.rootEl.on('mouseleave', null);
+    this.rootEl.on('touchstart', null);
+    this.rootEl.on('touchmove', null);
+    this.rootEl.on('touchend', null);
     this.rootEl.on('wheel', null);
   }
   d3Render(rotation, scale, selected) {
@@ -105,7 +114,9 @@ class WorldDrawing extends Component {
     this.projection.scale(RADIUS * scale);
     window.requestAnimationFrame(() => {
       this.rootGlobeEl.attr('r', this.projection.scale());
-      this.rootCountriesElSelection.attr('d', d => this.path(d));
+      this.rootCountriesElSelection
+        .attr('style', `stroke-width: ${scale * 0.25}`)
+        .attr('d', d => this.path(d));
       this.rootFisheriesElSelection
         .attr('class', d => (
           selected !== null && selected.id === d.fishery.id ?
@@ -116,15 +127,25 @@ class WorldDrawing extends Component {
     });
   }
   handleMouseDown() {
+    const { removeSelected } = this.props;
     if (this.touchPanning) return;
+    removeSelected();
     this.mousePanning = true;
+    this.mousePanned = false;
     this.lastPosition = d3Core.mouse(this.rootEl.node());
+    this.startPosition = this.lastPosition;
   }
   handleMouseMove() {
     if (!this.mousePanning) return;
     const { rotation, scale, setRotation } = this.props;
     const position = d3Core.mouse(this.rootEl.node());
     const speed = 1 / scale;
+    if (
+      Math.abs(position[0] - this.startPosition[0]) > RADIUS / 10 ||
+      Math.abs(position[1] - this.startPosition[1]) > RADIUS / 10
+    ) {
+      this.mousePanned = true;
+    }
     setRotation([
       (rotation[0] + ((position[0] - this.lastPosition[0]) * speed)) % 360,
       (rotation[1] - ((position[1] - this.lastPosition[1]) * speed)) % 360,
@@ -137,8 +158,10 @@ class WorldDrawing extends Component {
     this.mousePanning = false;
   }
   handleTouchStart() {
+    const { removeSelected } = this.props;
     if (this.mousePanning) return;
     const touches = d3Core.touches(this.rootEl.node());
+    removeSelected();
     if (touches.length > 1) return;
     this.touchPanning = true;
     this.lastPosition = touches[0];
@@ -166,7 +189,8 @@ class WorldDrawing extends Component {
     this.touchPanning = false;
   }
   handleWheel() {
-    const { scale, setScale } = this.props;
+    const { removeSelected, scale, setScale } = this.props;
+    removeSelected();
     const e = d3Core.event;
     if (e.deltaY <= 0) {
       setScale(

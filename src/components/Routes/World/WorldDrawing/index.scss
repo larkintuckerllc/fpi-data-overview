@@ -1,6 +1,8 @@
 #root {
   width: 100%;
-  background-color: black;
+}
+#rootSpace {
+  fill: #000000;
 }
 #rootGlobe {
   fill: #0000FF;
@@ -8,15 +10,13 @@
 .rootCountriesFeature {
   stroke: #fff;
   fill: #00FF00;
-  stroke-width: 0.25px;
 }
 .rootFisheriesFeature {
   stroke: rgb(255, 0, 0);
   fill: rgba(255, 0, 0, 0.5);
-  stroke-width: 0.25px;
+  stroke-width: 0;
 }
 .rootFisheriesFeatureSelected {
   stroke: rgb(0, 255, 255);
   fill: rgba(0, 255, 255, 0.5);
-  stroke-width: 0.25px;
 }

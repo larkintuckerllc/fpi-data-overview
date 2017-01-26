@@ -28,10 +28,13 @@ const World = ({
       setSelected={setSelected}
     />
     <WorldControls
+      removeSelected={removeSelected}
       scale={scale}
       setScale={setScale}
     />
-    <WorldSnackbar />
+    <WorldSnackbar
+      selected={selected}
+    />
   </WorldView>
 );
 World.propTypes = {
