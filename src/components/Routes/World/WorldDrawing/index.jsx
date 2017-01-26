@@ -68,7 +68,7 @@ class WorldDrawing extends Component {
               styles.rootFisheriesFeature
           ))
           .attr('d', d => this.path(d.geoJSON))
-          .on('click', (d) => {
+          .on('click', d => {
             setSelected(d.fishery);
           });
         this.rootFisheriesElSelection =
@@ -76,13 +76,13 @@ class WorldDrawing extends Component {
           .selectAll(`.${styles.rootFisheriesFeature}`)
           .data(fisheriesWithGeoJSON);
         this.d3Render(rotation, scale, selected);
-        this.rootEl.node().addEventListener('mousedown', this.handleMouseDown);
-        this.rootEl.node().addEventListener('mousemove', this.handleMouseMove);
-        this.rootEl.node().addEventListener('mouseup', this.handleMouseUp);
-        this.rootEl.node().addEventListener('touchstart', this.handleTouchStart);
-        this.rootEl.node().addEventListener('touchmove', this.handleTouchMove);
-        this.rootEl.node().addEventListener('touchend', this.handleTouchEnd);
-        this.rootEl.node().addEventListener('wheel', this.handleWheel);
+        this.rootEl.on('mousedown', this.handleMouseDown);
+        this.rootEl.on('mousemove', this.handleMouseMove);
+        this.rootEl.on('mouseup', this.handleMouseUp);
+        this.rootEl.on('touchstart', this.handleTouchStart);
+        this.rootEl.on('touchmove', this.handleTouchMove);
+        this.rootEl.on('touchend', this.handleTouchEnd);
+        this.rootEl.on('wheel', this.handleWheel);
       });
     });
   }
@@ -93,13 +93,11 @@ class WorldDrawing extends Component {
     return false;
   }
   componentWillUnmount() {
-    this.rootEl.node().removeEventListener('mousedown', this.handleMouseDown);
-    this.rootEl.node().removeEventListener('mousemove', this.handleMouseMove);
-    this.rootEl.node().removeEventListener('mouseup', this.handleMouseUp);
-    this.rootEl.node().removeEventListener('touchstart', this.handleTouchStart);
-    this.rootEl.node().removeEventListener('touchmove', this.handleTouchMove);
-    this.rootEl.node().removeEventListener('touchend', this.handleTouchEnd);
-    this.rootEl.node().removeEventListener('wheel', this.handleWheel);
+    this.rootFisheriesElSelection.on('click', null);
+    this.rootEl.on('mousedown', null);
+    this.rootEl.on('mousemove', null);
+    this.rootEl.on('mouseup', null);
+    this.rootEl.on('wheel', null);
   }
   d3Render(rotation, scale, selected) {
     if (this.rootCountriesElSelection === undefined) return;
@@ -117,50 +115,59 @@ class WorldDrawing extends Component {
         .attr('d', d => this.path(d.geoJSON));
     });
   }
-  handleMouseDown(e) {
+  handleMouseDown() {
+    if (this.touchPanning) return;
     this.mousePanning = true;
-    this.mouseLastX = e.pageX;
-    this.mouseLastY = e.pageY;
+    this.lastPosition = d3Core.mouse(this.rootEl.node());
   }
-  handleMouseMove(e) {
+  handleMouseMove() {
     if (!this.mousePanning) return;
     const { rotation, scale, setRotation } = this.props;
-    const speed = (0.25) * (1 / scale);
-    const mouseX = e.pageX;
-    const mouseY = e.pageY;
+    const position = d3Core.mouse(this.rootEl.node());
+    const speed = 1 / scale;
     setRotation([
-      (rotation[0] + ((mouseX - this.mouseLastX) * speed)) % 360,
-      (rotation[1] - ((mouseY - this.mouseLastY) * speed)) % 360,
+      (rotation[0] + ((position[0] - this.lastPosition[0]) * speed)) % 360,
+      (rotation[1] - ((position[1] - this.lastPosition[1]) * speed)) % 360,
       0,
     ]);
-    this.mouseLastX = mouseX;
-    this.mouseLastY = mouseY;
+    this.lastPosition = position;
   }
   handleMouseUp() {
+    if (!this.mousePanning) return;
     this.mousePanning = false;
   }
-  handleTouchStart(e) {
-    if (e.touches.length !== 1) return;
-    this.touchOneLastX = e.touches[0].pageX;
-    this.touchOneLastY = e.touches[0].pageY;
+  handleTouchStart() {
+    if (this.mousePanning) return;
+    const touches = d3Core.touches(this.rootEl.node());
+    if (touches.length > 1) return;
+    this.touchPanning = true;
+    this.lastPosition = touches[0];
   }
-  handleTouchMove(e) {
+  handleTouchMove() {
+    if (!this.touchPanning) return;
     const { rotation, scale, setRotation } = this.props;
-    const speed = (0.25) * (1 / scale);
-    const touchOneX = e.touches[0].pageX;
-    const touchOneY = e.touches[0].pageY;
+    const position = d3Core.touches(this.rootEl.node())[0];
+    const speed = 1 / scale;
     setRotation([
-      (rotation[0] + ((touchOneX - this.touchOneLastX) * speed)) % 360,
-      (rotation[1] - ((touchOneY - this.touchOneLastY) * speed)) % 360,
+      (rotation[0] + ((position[0] - this.lastPosition[0]) * speed)) % 360,
+      (rotation[1] - ((position[1] - this.lastPosition[1]) * speed)) % 360,
       0,
     ]);
-    this.touchOneLastX = touchOneX;
-    this.touchOneLastY = touchOneY;
+    this.lastPosition = position;
   }
   handleTouchEnd() {
+    if (!this.touchPanning) return;
+    const touches = d3Core.touches(this.rootEl.node());
+    if (touches.length > 1) return;
+    if (touches.length === 1) {
+      this.lastPosition = touches[0];
+      return;
+    }
+    this.touchPanning = false;
   }
-  handleWheel(e) {
+  handleWheel() {
     const { scale, setScale } = this.props;
+    const e = d3Core.event;
     if (e.deltaY <= 0) {
       setScale(
         scale < MAX_SCALE ? scale * 2 : MAX_SCALE
