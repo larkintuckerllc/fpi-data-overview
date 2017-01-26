@@ -3,20 +3,22 @@ import { connect } from 'react-redux';
 import * as fromRotation from '../../../ducks/rotation';
 import * as fromScale from '../../../ducks/scale';
 import WorldView from './WorldView';
+import WorldDrawing from './WorldDrawing';
 import WorldControls from './WorldControls';
 
 const World = ({ rotation, scale, setRotation, setScale }) => (
-  <div>
-    <WorldView
+  <WorldView>
+    <WorldDrawing
       rotation={rotation}
       scale={scale}
       setRotation={setRotation}
+      setScale={setScale}
     />
     <WorldControls
       scale={scale}
       setScale={setScale}
     />
-  </div>
+  </WorldView>
 );
 World.propTypes = {
   rotation: PropTypes.array.isRequired,

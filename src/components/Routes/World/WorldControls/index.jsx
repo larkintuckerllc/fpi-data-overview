@@ -1,18 +1,19 @@
 import React, { PropTypes } from 'react';
+import { MIN_SCALE, MAX_SCALE } from '../../../../strings';
 import styles from './index.scss';
 
 const WorldControls = ({ scale, setScale }) => (
   <div id={styles.root}>
     <div
       onClick={() => setScale(
-        scale < 3 ? scale + 0.25 : 3
+        scale < MAX_SCALE ? scale * 2 : MAX_SCALE
       )}
     >
       <span className="glyphicon glyphicon-zoom-in" aria-hidden="true" />
     </div>
     <div
       onClick={() => setScale(
-        scale > 1 ? scale - 0.25 : 1
+        scale > MIN_SCALE ? scale / 2 : MIN_SCALE
       )}
     >
       <span className="glyphicon glyphicon-zoom-out" aria-hidden="true" />
