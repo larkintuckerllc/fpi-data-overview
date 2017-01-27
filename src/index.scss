@@ -3,6 +3,9 @@
   padding: 0px;
   font-family: sans-serif;
 }
+:global(div) {
+  box-sizing: border-box;
+}
 :global(.container) {
     margin-right: auto;
     margin-left: auto;

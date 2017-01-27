@@ -3,7 +3,54 @@
   bottom: 0px;
   left: 0px;
   width: 100%;
-  height: 100px;
+  height: 130px;
+  padding-top: 10px;
+  padding-bottom: 10px;
   background-color: rgba(0, 0, 0, 0.7);
   transition: transform 1s;
+}
+#rootContainer {
+  display: flex;
+  height: 100%;
+}
+#rootContainerLeft {
+  flex-shrink: 0;
+  display: none;
+  margin-right: 10px;
+}
+#rootContainerRight {
+  flex-grow: 1;
+  min-width: 0px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  color: white;
+}
+#rootContainerRightTitle {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 1.5em;
+  font-weight: bold;
+}
+.rootContainerRightIndicator {
+  display: flex;
+  flex-direction: row;
+}
+.rootContainerRightIndicatorTitle {
+  width: 100px;
+}
+.rootContainerRightIndicatorValue {
+  flex-grow: 1;
+  margin-left: 10px;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+.rootContainerRightIndicatorValueScale {
+  height: 100%;
+}
+@media (min-width: 768px) {
+  #rootContainerLeft{
+      display: block;
+      margin-right: 10px;
+  }
 }

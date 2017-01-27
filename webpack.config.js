@@ -9,6 +9,9 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const WebpackMd5Hash = require('webpack-md5-hash');
 // eslint-disable-next-line
 const CleanWebpackPlugin = require('clean-webpack-plugin');
+// eslint-disable-next-line
+const CopyWebpackPlugin = require('copy-webpack-plugin');
+
 
 const HtmlWebpackPluginConfig = new HtmlWebpackPlugin({
   template: path.join(__dirname, 'src', 'index.html'),
@@ -83,6 +86,9 @@ module.exports = {
     ],
   plugins: [
     new CleanWebpackPlugin(['dist']),
+    new CopyWebpackPlugin([
+      { from: 'data', to: 'data' },
+    ]),
     new WebpackMd5Hash(),
     HtmlWebpackPluginConfig,
     new webpack.DefinePlugin({
